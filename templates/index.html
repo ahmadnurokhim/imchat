@@ -23,6 +23,7 @@
         })
         // Receive convs data from server
         socket.on('get_convs2', function (data) {
+            document.getElementById('conv-list').innerHTML = '';
             data.forEach(function (row) {
                 update_conv_list(row[0], row[1])
             })
@@ -47,6 +48,9 @@
         }
         // Handle user's messages
         socket.on('user_message2', function (data) {
+            if (current_conv_id == '999999') {
+                socket.emit('get_convs')
+            } 
             current_conv_id = data.conv_id;
             refresh_chatbox_from_conv_id(current_conv_id)
         });
@@ -83,6 +87,11 @@
             new_message.innerHTML = message;
             chat_box.appendChild(new_message);
         }
+
+        function new_conv() {
+            current_conv_id = '999999';
+            document.getElementById('chat-box').innerHTML = '';
+        }
     </script>
 
 </head>
@@ -92,7 +101,7 @@
         <div id="conv-container-left" class="conv-container">
             <div id="conv-list" class="conv-list">
             </div>
-            <button id='add-conv' class="btn btn-secondary">New</button>
+            <button id='add-conv' class="btn btn-secondary" onclick="new_conv()">New</button>
         </div>
         <div class="conv-container">
             <div id="chat-box" class="chat-window">
