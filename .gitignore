@@ -1,3 +1,10 @@
+# My preferences
+.vscode
+credentials
+main.ipynb
+data.db
+tes.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

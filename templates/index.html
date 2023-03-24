@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='/style.css') }}">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/4.4.1/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        // Connect to the Flask-SocketIO server
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Update the conv
+        var current_conv_id = '000000'
+
+        // Request chat data from server
+        window.addEventListener('load', function () {
+            socket.emit('get_chat_box_contents', { conv_id: current_conv_id })
+        })
+        
+        // Receive chat data from server
+        socket.on('get_chat_box_contents2', function (data){
+            data.forEach(function (row) {
+                update_chatbox_user(row[2], row[3])
+            })
+        });
+        
+        // Handle incoming messages
+        socket.on('user_message2', function (data) {
+            update_chatbox_user(data.role, data.msg);
+        });
+
+        // Send a message to the server
+        function user_input() {
+            var input_box = document.getElementById('message-input');
+            var message = input_box.value;
+            if (message != '') {
+                socket.emit('user_message', { role: 'user', msg: message });
+                input_box.value = '';
+            }
+            document.getElementById('message-input').focus();
+        }
+
+        // Add a new message to the chat box
+        function update_chatbox_user(role, message) {
+            var chat_box = document.getElementById('chat-box');
+            var new_message = document.createElement('div');
+            if (role === 'user') {
+                new_message.className = 'message msg-user';
+            } else if (role === 'assistant') {
+                new_message.className = 'message msg-bot';
+            }
+            new_message.innerHTML = message;
+            chat_box.appendChild(new_message);
+        }
+    </script>
+
+</head>
+
+<body>
+    <div class="main-window">
+        <div class="conv-list">
+            <button type="button" class="btn btn-secondary">
+                This is the topic
+            </button>
+            <button type="button" class="btn btn-secondary">
+                This is the topic topic topic topic topic topic
+            </button>
+        </div>
+        <div class="conv-container">
+            <div id="chat-box" class="chat-window">
+
+            </div>
+            <div class="input-group mb-3">
+                <input id="message-input" type="text" class="form-control" placeholder="Message">
+                <button id="send-btn" type="button" class="btn btn-secondary" onclick="user_input()">
+                    <span class="material-symbols-outlined">
+                        send
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
