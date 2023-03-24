@@ -14,23 +14,25 @@
         var socket = io.connect('http://' + document.domain + ':' + location.port);
 
         // Update the conv
-        var current_conv_id = '000000'
+        var current_conv_id = '999999'
 
-        // Request chat data from server
+        // Request convs and chat data from server
         window.addEventListener('load', function () {
-            socket.emit('get_chat_box_contents', { conv_id: current_conv_id })
+            socket.emit('get_convs')
+            refresh_chatbox_from_conv_id(current_conv_id)
         })
-        
-        // Receive chat data from server
-        socket.on('get_chat_box_contents2', function (data){
+        // Receive convs data from server
+        socket.on('get_convs2', function (data) {
             data.forEach(function (row) {
-                update_chatbox_user(row[2], row[3])
+                update_conv_list(row[0], row[1])
             })
-        });
-        
-        // Handle incoming messages
-        socket.on('user_message2', function (data) {
-            update_chatbox_user(data.role, data.msg);
+        })
+
+        // Receive chat data from server
+        socket.on('get_chat_box_contents2', function (data) {
+            data.forEach(function (row) {
+                update_chatbox(row[2], row[3])
+            })
         });
 
         // Send a message to the server
@@ -38,21 +40,46 @@
             var input_box = document.getElementById('message-input');
             var message = input_box.value;
             if (message != '') {
-                socket.emit('user_message', { role: 'user', msg: message });
+                socket.emit('user_message', { conv_id: current_conv_id, role: 'user', msg: message });
                 input_box.value = '';
             }
             document.getElementById('message-input').focus();
         }
+        // Handle user's messages
+        socket.on('user_message2', function (data) {
+            current_conv_id = data.conv_id;
+            refresh_chatbox_from_conv_id(current_conv_id)
+        });
+
+        // Add a new conversatino to the conv list
+        function update_conv_list(conv_id, conv_topic) {
+            var conv_list = document.getElementById('conv-list');
+            var conv_item = document.createElement('button');
+            conv_item.className = 'btn btn-secondary';
+            conv_item.id = conv_id;
+            conv_item.onclick = function () {
+                current_conv_id = conv_id;
+                refresh_chatbox_from_conv_id(conv_item.id);
+            };
+            conv_item.innerHTML = conv_topic;
+            conv_list.appendChild(conv_item);
+        }
+
+        // To switch the conv and update the chat box according to the selected conv
+        function refresh_chatbox_from_conv_id(conv_id) {
+            document.getElementById('chat-box').innerHTML = '';
+            socket.emit('get_chat_box_contents', { conv_id: conv_id })
+        }
 
         // Add a new message to the chat box
-        function update_chatbox_user(role, message) {
+        function update_chatbox(role, message) {
             var chat_box = document.getElementById('chat-box');
             var new_message = document.createElement('div');
             if (role === 'user') {
                 new_message.className = 'message msg-user';
             } else if (role === 'assistant') {
                 new_message.className = 'message msg-bot';
-            }
+            };
             new_message.innerHTML = message;
             chat_box.appendChild(new_message);
         }
@@ -62,13 +89,10 @@
 
 <body>
     <div class="main-window">
-        <div class="conv-list">
-            <button type="button" class="btn btn-secondary">
-                This is the topic
-            </button>
-            <button type="button" class="btn btn-secondary">
-                This is the topic topic topic topic topic topic
-            </button>
+        <div id="conv-container-left" class="conv-container">
+            <div id="conv-list" class="conv-list">
+            </div>
+            <button id='add-conv' class="btn btn-secondary">New</button>
         </div>
         <div class="conv-container">
             <div id="chat-box" class="chat-window">

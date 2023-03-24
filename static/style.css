@@ -23,6 +23,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+#add-conv {
+    margin-bottom: 1rem; 
+    margin-left: 20px;
+    max-width: 300px;
+}
 
 .conv-list button:focus {
     box-shadow: none;
@@ -34,6 +39,9 @@
     display: flex;
     flex-direction: column;
 }
+#conv-container-left {
+    max-width: 300px;
+}
 
 .input-group {
     padding-left: 20px;
@@ -41,7 +49,6 @@
 
 .chat-window {
     background-color: #282a36;
-    border: 1px solid black;
     overflow-y: scroll;
     margin: 20px 0px 20px 20px;
     padding: 20px;
